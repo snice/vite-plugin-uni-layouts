@@ -1,7 +1,7 @@
 import { FSWatcher, normalizePath, ResolvedConfig, ViteDevServer } from "vite";
 import { scanLayouts } from "./scan";
 import { Layout, Page, ResolvedOptions } from "./types";
-import { getTarget, loadPagesJson } from "./utils";
+import { getTarget, loadPagesJson, existsFile } from "./utils";
 import MagicString from "magic-string";
 import { ElementNode, parse } from "@vue/compiler-dom";
 import { kebabCase } from "scule";
@@ -11,6 +11,7 @@ import { resolve } from "path";
 export class Context {
   config!: ResolvedConfig;
   options: ResolvedOptions;
+  easycom: Boolean = false;
   pages: Page[];
   layouts: Layout[];
   private _server?: ViteDevServer;
@@ -18,6 +19,7 @@ export class Context {
     this.options = options;
     this.pages = [];
     this.layouts = scanLayouts(options.layoutDir, options.cwd);
+    this.parsePages()
   }
 
   setupViteServer(server: ViteDevServer) {
@@ -27,26 +29,37 @@ export class Context {
     this.setupWatcher(server.watcher);
   }
 
+  hasFile(fname: string): boolean {
+    return existsFile(fname, this.options.cwd)
+  }
+
+  parsePages() {
+    const pagesJson = loadPagesJson("pages.json", this.options.cwd);
+    this.easycom = pagesJson.easycom != undefined;
+    this.pages = pagesJson.pages;
+  }
+
   async setupWatcher(watcher: FSWatcher) {
     watcher.on("change", async (path) => {
       if (
         normalizePath(path) ===
-        normalizePath(resolve(this.options.cwd, "src/pages.json"))
-      )
-        this.pages = loadPagesJson("src/pages.json", this.options.cwd);
+        normalizePath(resolve(this.options.cwd, "pages.json"))
+      ) {
+        this.parsePages()
+      }
       // TODO: auto reload
     });
   }
 
   transform(code: string, path: string) {
     if (!this.pages?.length) {
-      this.pages = loadPagesJson("src/pages.json", this.options.cwd);
+      this.parsePages()
     }
+    if (path.includes(this.options.cwd) == false) return;
     const page = getTarget(
       path,
       this.pages,
-      this.options.layout,
-      this.config.root
+      this.options.layout
     );
     if (!page) return;
     if (!this.layouts.length) return;

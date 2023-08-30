@@ -13,7 +13,7 @@ export const VitePluginUniLayouts = (userOptions: UserOptions = {}): Plugin => {
     configResolved(config) {
       ctx.config = config;
     },
-    configureServer(server){
+    configureServer(server) {
       ctx.setupViteServer(server)
     },
     resolveId(id) {
@@ -27,8 +27,9 @@ export const VitePluginUniLayouts = (userOptions: UserOptions = {}): Plugin => {
       }
     },
     transform(code, id) {
-      const filter = createFilter("src/main.(ts|js)");
-      if (filter(id)) {
+      const isMain = id.endsWith("main.js") || id.endsWith("main.ts");
+      const hasMain = ctx.hasFile("src/main.js") || ctx.hasFile("src/main.ts") || ctx.hasFile("main.js") || ctx.hasFile("main.ts")
+      if (isMain && hasMain) {
         return ctx.importLayoutComponents(code, id);
       }
       return ctx.transform(code, id);

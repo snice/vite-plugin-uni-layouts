@@ -1,11 +1,11 @@
-# @uni-helper/vite-plugin-uni-layouts
+# @snicesoft/vite-plugin-uni-layouts
 
 Vite 下 uni-app 的可定制布局框架
 
 ## 安装
 
 ```bash
-pnpm i -D @uni-helper/vite-plugin-uni-layouts
+pnpm i -D @snicesoft/vite-plugin-uni-layouts
 ```
 
 ## 使用
@@ -16,7 +16,7 @@ pnpm i -D @uni-helper/vite-plugin-uni-layouts
 // vite.config.ts
 import { defineConfig } from "vite";
 import uni from "@dcloudio/vite-plugin-uni";
-import UniLayouts from "@uni-helper/vite-plugin-uni-layouts";
+import UniLayouts from "@snicesoft/vite-plugin-uni-layouts";
 
 export default defineConfig({
   plugins: [UniLayouts(), uni()],
